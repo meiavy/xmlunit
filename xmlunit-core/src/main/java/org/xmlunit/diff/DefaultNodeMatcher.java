@@ -112,7 +112,10 @@ public class DefaultNodeMatcher implements NodeMatcher {
 
     private boolean nodesMatch(final Node n1, final Node n2) {
         if (n1 instanceof Element && n2 instanceof Element) {
-            return elementSelector.canBeCompared((Element) n1, (Element) n2);
+            return elementSelector.canBeCompared((Element) n1,
+                                                 /* TODO */ null,
+                                                 (Element) n2,
+                                                 /* TODO */ null);
         }
         return nodeTypeMatcher.canBeCompared(n1.getNodeType(),
                                              n2.getNodeType());

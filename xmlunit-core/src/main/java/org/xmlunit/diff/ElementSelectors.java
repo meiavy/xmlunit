@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
+import org.xmlunit.util.BiPredicate;
 import org.xmlunit.util.IsNullPredicate;
 import org.xmlunit.util.Linqy;
 import org.xmlunit.util.Mapper;
@@ -55,8 +56,10 @@ public final class ElementSelectors {
      */
     public static final ElementSelector Default = new ElementSelector() {
             @Override
-            public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
+            public boolean canBeCompared(Element _controlElement,
+                                         XPathContext _controlXPath,
+                                         Element _testElement,
+                                         XPathContext _textXPath) {
                 return true;
             }
         };
@@ -68,7 +71,9 @@ public final class ElementSelectors {
     public static final ElementSelector byName = new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
+                                         XPathContext _controlXPath,
+                                         Element testElement,
+                                         XPathContext _textXPath) {
                 return controlElement != null
                     && testElement != null
                     && bothNullOrEqual(Nodes.getQName(controlElement),
@@ -83,8 +88,11 @@ public final class ElementSelectors {
     public static final ElementSelector byNameAndText = new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
-                return byName.canBeCompared(controlElement, testElement)
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext testXPath) {
+                return byName.canBeCompared(controlElement, controlXPath,
+                                            testElement, testXPath)
                     && bothNullOrEqual(Nodes.getMergedNestedText(controlElement),
                                        Nodes.getMergedNestedText(testElement));
             }
@@ -134,8 +142,11 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
-                if (!byName.canBeCompared(controlElement, testElement)) {
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext textXPath) {
+                if (!byName.canBeCompared(controlElement, controlXPath,
+                                          testElement, textXPath)) {
                     return false;
                 }
                 Map<QName, String> cAttrs = Nodes.getAttributes(controlElement);
@@ -176,8 +187,11 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
-                if (!byName.canBeCompared(controlElement, testElement)) {
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext testXPath) {
+                if (!byName.canBeCompared(controlElement, controlXPath,
+                                          testElement, testXPath)) {
                     return false;
                 }
                 return mapsEqualForKeys(Nodes.getAttributes(controlElement),
@@ -195,8 +209,11 @@ public final class ElementSelectors {
         new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
-                if (!byName.canBeCompared(controlElement, testElement)) {
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext testXPath) {
+                if (!byName.canBeCompared(controlElement, controlXPath,
+                                          testElement, testXPath)) {
                     return false;
                 }
                 Map<QName, String> cAttrs = Nodes.getAttributes(controlElement);
@@ -225,8 +242,11 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
-                return !es.canBeCompared(controlElement, testElement);
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext testXPath) {
+                return !es.canBeCompared(controlElement, controlXPath,
+                                         testElement, testXPath);
             }
         };
     }
@@ -245,8 +265,11 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
-                return any(s, new CanBeComparedPredicate(controlElement, testElement));
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext testXPath) {
+                return any(s, new CanBeComparedPredicate(controlElement, controlXPath,
+                                                         testElement, testXPath));
             }
         };
     }
@@ -265,9 +288,14 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext testXPath) {
                 return all(s,
-                           new CanBeComparedPredicate(controlElement, testElement));
+                           new CanBeComparedPredicate(controlElement,
+                                                      controlXPath,
+                                                      testElement,
+                                                      testXPath));
             }
         };
     }
@@ -283,9 +311,13 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
-                return es1.canBeCompared(controlElement, testElement)
-                    ^ es2.canBeCompared(controlElement, testElement);
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext testXPath) {
+                return es1.canBeCompared(controlElement, controlXPath,
+                                         testElement, testXPath)
+                    ^ es2.canBeCompared(controlElement, controlXPath,
+                                        testElement, testXPath);
             }
         };
     }
@@ -294,7 +326,7 @@ public final class ElementSelectors {
      * Applies the wrapped ElementSelector's logic if and only if the
      * control element matches the given predicate.
      */
-    public static ElementSelector conditionalSelector(final Predicate<? super Element> predicate,
+    public static ElementSelector conditionalSelector(final BiPredicate<? super Element, XPathContext> predicate,
                                                       final ElementSelector es) {
 
         if (predicate == null) {
@@ -306,9 +338,12 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
-                return predicate.test(controlElement)
-                    && es.canBeCompared(controlElement, testElement);
+                                         XPathContext controlXPath,
+                                         Element testElement,
+                                         XPathContext testXPath) {
+                return predicate.test(controlElement, controlXPath)
+                    && es.canBeCompared(controlElement, controlXPath,
+                                        testElement, testXPath);
             }
         };
     }
@@ -323,7 +358,7 @@ public final class ElementSelectors {
             throw new IllegalArgumentException("expectedName must not be null");
         }
 
-        return conditionalSelector(elementNamePredicate(expectedName), es);
+        return conditionalSelector(elementNameBiPredicate(expectedName), es);
     }
 
     /**
@@ -336,7 +371,7 @@ public final class ElementSelectors {
             throw new IllegalArgumentException("expectedName must not be null");
         }
 
-        return conditionalSelector(elementNamePredicate(expectedName), es);
+        return conditionalSelector(elementNameBiPredicate(expectedName), es);
     }
 
     /**
@@ -380,7 +415,9 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         Element testElement) {
+                                         XPathContext _controlXPath,
+                                         Element testElement,
+                                         XPathContext _testXPath) {
                 Iterable<Node> controlChildren =
                     engine.selectNodes(xpath, new DOMSource(controlElement));
                 int expected = Linqy.count(controlChildren);
@@ -415,7 +452,7 @@ public final class ElementSelectors {
         /**
          * Sets up a conditional ElementSelector.
          */
-        ConditionalSelectorBuilderThen when(Predicate<? super Element> predicate);
+        ConditionalSelectorBuilderThen when(BiPredicate<? super Element, XPathContext> biPredicate);
         /**
          * Sets up a conditional ElementSelector.
          */
@@ -449,7 +486,7 @@ public final class ElementSelectors {
         implements ConditionalSelectorBuilder, ConditionalSelectorBuilderThen {
         private ElementSelector defaultSelector;
         private final List<ElementSelector> conditionalSelectors = new LinkedList<ElementSelector>();
-        private Predicate<? super Element> pendingCondition;
+        private BiPredicate<? super Element, XPathContext> pendingCondition;
 
         @Override
         public ConditionalSelectorBuilder thenUse(ElementSelector es) {
@@ -461,11 +498,11 @@ public final class ElementSelectors {
             return this;
         }
         @Override
-        public ConditionalSelectorBuilderThen when(Predicate<? super Element> predicate) {
+        public ConditionalSelectorBuilderThen when(BiPredicate<? super Element, XPathContext> biPredicate) {
             if (pendingCondition != null) {
                 throw new IllegalStateException("unbalanced conditions");
             }
-            pendingCondition = predicate;
+            pendingCondition = biPredicate;
             return this;
         }
         @Override
@@ -478,11 +515,11 @@ public final class ElementSelectors {
         }
         @Override
         public ConditionalSelectorBuilderThen whenElementIsNamed(String expectedName) {
-            return when(elementNamePredicate(expectedName));
+            return when(elementNameBiPredicate(expectedName));
         }
         @Override
         public ConditionalSelectorBuilderThen whenElementIsNamed(QName expectedName) {
-            return when(elementNamePredicate(expectedName));
+            return when(elementNameBiPredicate(expectedName));
         }
         @Override
         public ElementSelector build() {
@@ -517,10 +554,10 @@ public final class ElementSelectors {
         return n instanceof Text || n instanceof CDATASection;
     }
 
-    private static Predicate<Element> elementNamePredicate(final String expectedName) {
-        return new Predicate<Element>() {
+    private static BiPredicate<Element, XPathContext> elementNameBiPredicate(final String expectedName) {
+        return new BiPredicate<Element, XPathContext>() {
             @Override
-            public boolean test(Element e) {
+            public boolean test(Element e, XPathContext _) {
                 if (e == null) {
                     return false;
                 }
@@ -533,10 +570,10 @@ public final class ElementSelectors {
         };
     }
 
-    private static Predicate<Element> elementNamePredicate(final QName expectedName) {
-        return new Predicate<Element>() {
+    private static BiPredicate<Element, XPathContext> elementNameBiPredicate(final QName expectedName) {
+        return new BiPredicate<Element, XPathContext>() {
             @Override
-            public boolean test(Element e) {
+            public boolean test(Element e, XPathContext _) {
                 return e == null ? false : expectedName.equals(Nodes.getQName(e));
             }
         };
@@ -544,24 +581,32 @@ public final class ElementSelectors {
 
     private static class CanBeComparedPredicate implements Predicate<ElementSelector> {
         private final Element e1, e2;
+        private final XPathContext c1, c2;
 
-        private CanBeComparedPredicate(Element e1, Element e2) {
+        private CanBeComparedPredicate(Element e1, XPathContext c1,
+                                       Element e2, XPathContext c2) {
             this.e1 = e1;
+            this.c1 = c1;
             this.e2 = e2;
+            this.c2 = c2;
         }
 
         @Override
         public boolean test(ElementSelector es) {
-            return es.canBeCompared(e1, e2);
+            return es.canBeCompared(e1, c1, e2, c2);
         }
     }
 
     private static class ByNameAndTextRecSelector implements ElementSelector {
         @Override
         public boolean canBeCompared(Element controlElement,
-                                     Element testElement) {
+                                     XPathContext controlXPath,
+                                     Element testElement,
+                                     XPathContext testXPath) {
             if (!byNameAndText.canBeCompared(controlElement,
-                                             testElement)) {
+                                             controlXPath,
+                                             testElement,
+                                             testXPath)) {
                 return false;
             }
             NodeList controlChildren = controlElement.getChildNodes();
@@ -596,8 +641,9 @@ public final class ElementSelectors {
                     return false;
                 }
                 // recurse for child elements
-                if (c instanceof Element && !byNameAndTextRec.canBeCompared((Element) c,
-                                                                            (Element) t)) {
+                if (c instanceof Element
+                    && !byNameAndTextRec.canBeCompared((Element) c, /* TODO */ null,
+                                                       (Element) t, /* TODO */ null)) {
                     return false;
                 }
                 controlIndex++;

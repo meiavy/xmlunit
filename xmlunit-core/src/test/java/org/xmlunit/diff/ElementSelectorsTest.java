@@ -24,7 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
-import org.xmlunit.util.IsNullPredicate;
+import org.xmlunit.util.BiPredicate;
 import org.xmlunit.util.Predicate;
 
 import static org.junit.Assert.*;
@@ -48,14 +48,14 @@ public class ElementSelectorsTest {
         Element controlNS = doc.createElementNS(SOME_URI, FOO);
         controlNS.setPrefix(BAR);
 
-        assertFalse(s.canBeCompared(null, null));
-        assertFalse(s.canBeCompared(null, control));
-        assertFalse(s.canBeCompared(control, null));
-        assertTrue(s.canBeCompared(control, equal));
-        assertFalse(s.canBeCompared(control, different));
-        assertFalse(s.canBeCompared(control, controlNS));
+        assertFalse(s.canBeCompared(null, null, null, null));
+        assertFalse(s.canBeCompared(null, null, control, null));
+        assertFalse(s.canBeCompared(control, null, null, null));
+        assertTrue(s.canBeCompared(control, null, equal, null));
+        assertFalse(s.canBeCompared(control, null, different, null));
+        assertFalse(s.canBeCompared(control, null, controlNS, null));
         assertTrue(s.canBeCompared(doc.createElementNS(SOME_URI, FOO),
-                                   controlNS));
+                                   null, controlNS, null));
     }
 
     @Test public void byName() {
@@ -78,10 +78,10 @@ public class ElementSelectorsTest {
         differentText.appendChild(doc.createTextNode(BAR));
         differentText.appendChild(doc.createTextNode(BAR));
 
-        assertTrue(s.canBeCompared(control, equal));
-        assertTrue(s.canBeCompared(control, equalC));
-        assertFalse(s.canBeCompared(control, noText));
-        assertFalse(s.canBeCompared(control, differentText));
+        assertTrue(s.canBeCompared(control, null, equal, null));
+        assertTrue(s.canBeCompared(control, null, equalC, null));
+        assertFalse(s.canBeCompared(control, null, noText, null));
+        assertFalse(s.canBeCompared(control, null, differentText, null));
     }
 
     @Test public void byNameAndText() {
@@ -122,12 +122,12 @@ public class ElementSelectorsTest {
         child5.appendChild(doc.createTextNode(FOO));
 
         ElementSelector s = ElementSelectors.byNameAndTextRec;
-        assertTrue(s.canBeCompared(control, equal));
-        assertTrue(s.canBeCompared(control, equalC));
-        assertFalse(s.canBeCompared(control, noText));
-        assertFalse(s.canBeCompared(control, differentLevel));
-        assertFalse(s.canBeCompared(control, differentElement));
-        assertFalse(s.canBeCompared(control, differentText));
+        assertTrue(s.canBeCompared(control, null, equal, null));
+        assertTrue(s.canBeCompared(control, null, equalC, null));
+        assertFalse(s.canBeCompared(control, null, noText, null));
+        assertFalse(s.canBeCompared(control, null, differentLevel, null));
+        assertFalse(s.canBeCompared(control, null, differentElement, null));
+        assertFalse(s.canBeCompared(control, null, differentText, null));
     }
 
     @Test public void byNameAndAllAttributes_NamePart() {
@@ -148,17 +148,17 @@ public class ElementSelectorsTest {
         differentNS.setAttributeNS(SOME_URI, BAR, BAR);
 
         assertTrue(ElementSelectors.byNameAndAllAttributes
-                   .canBeCompared(control, equal));
+                   .canBeCompared(control, null, equal, null));
         assertFalse(ElementSelectors.byNameAndAllAttributes
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertFalse(ElementSelectors.byNameAndAllAttributes
-                    .canBeCompared(noAttributes, control));
+                    .canBeCompared(noAttributes, null, control, null));
         assertFalse(ElementSelectors.byNameAndAllAttributes
-                   .canBeCompared(control, differentValue));
+                   .canBeCompared(control, null, differentValue, null));
         assertFalse(ElementSelectors.byNameAndAllAttributes
-                   .canBeCompared(control, differentName));
+                   .canBeCompared(control, null, differentName, null));
         assertFalse(ElementSelectors.byNameAndAllAttributes
-                   .canBeCompared(control, differentNS));
+                   .canBeCompared(control, null, differentNS, null));
     }
 
     @Test public void byNameAndAttributes_NamePart() {
@@ -186,21 +186,21 @@ public class ElementSelectorsTest {
         differentNS.setAttributeNS(SOME_URI, BAR, BAR);
 
         assertTrue(ElementSelectors.byNameAndAttributes(BAR)
-                   .canBeCompared(control, equal));
+                   .canBeCompared(control, null, equal, null));
         assertFalse(ElementSelectors.byNameAndAttributes(BAR)
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertTrue(ElementSelectors.byNameAndAttributes(FOO)
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertTrue(ElementSelectors.byNameAndAttributes(new String[] {})
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertFalse(ElementSelectors.byNameAndAttributes(BAR)
-                    .canBeCompared(noAttributes, control));
+                    .canBeCompared(noAttributes, null, control, null));
         assertFalse(ElementSelectors.byNameAndAttributes(BAR)
-                   .canBeCompared(control, differentValue));
+                   .canBeCompared(control, null, differentValue, null));
         assertFalse(ElementSelectors.byNameAndAttributes(BAR)
-                   .canBeCompared(control, differentName));
+                   .canBeCompared(control, null, differentName, null));
         assertFalse(ElementSelectors.byNameAndAttributes(BAR)
-                   .canBeCompared(control, differentNS));
+                   .canBeCompared(control, null, differentNS, null));
     }
 
     @Test public void byNameAndAttributes_QName() {
@@ -217,21 +217,21 @@ public class ElementSelectorsTest {
         differentNS.setAttributeNS(SOME_URI, BAR, BAR);
 
         assertTrue(ElementSelectors.byNameAndAttributes(new QName(BAR))
-                   .canBeCompared(control, equal));
+                   .canBeCompared(control, null, equal, null));
         assertFalse(ElementSelectors.byNameAndAttributes(new QName(BAR))
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertTrue(ElementSelectors.byNameAndAttributes(new QName(FOO))
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertTrue(ElementSelectors.byNameAndAttributes(new QName[] {})
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertFalse(ElementSelectors.byNameAndAttributes(new QName(BAR))
-                    .canBeCompared(noAttributes, control));
+                    .canBeCompared(noAttributes, null, control, null));
         assertFalse(ElementSelectors.byNameAndAttributes(new QName(BAR))
-                   .canBeCompared(control, differentValue));
+                   .canBeCompared(control, null, differentValue, null));
         assertFalse(ElementSelectors.byNameAndAttributes(new QName(BAR))
-                   .canBeCompared(control, differentName));
+                   .canBeCompared(control, null, differentName, null));
         assertFalse(ElementSelectors.byNameAndAttributes(new QName(BAR))
-                   .canBeCompared(control, differentNS));
+                   .canBeCompared(control, null, differentNS, null));
     }
 
     @Test public void byNameAndAttributesControlNS_NamePart() {
@@ -257,25 +257,25 @@ public class ElementSelectorsTest {
         noNS.setAttribute(BAR, BAR);
 
         assertTrue(ElementSelectors.byNameAndAttributesControlNS(BAR)
-                   .canBeCompared(control, equal));
+                   .canBeCompared(control, null, equal, null));
         assertFalse(ElementSelectors.byNameAndAttributesControlNS(BAR)
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertTrue(ElementSelectors.byNameAndAttributesControlNS(FOO)
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertTrue(ElementSelectors.byNameAndAttributesControlNS(new String[] {})
-                   .canBeCompared(control, noAttributes));
+                   .canBeCompared(control, null, noAttributes, null));
         assertTrue(ElementSelectors.byNameAndAttributesControlNS(BAR)
-                   .canBeCompared(noAttributes, control));
+                   .canBeCompared(noAttributes, null, control, null));
         assertFalse(ElementSelectors.byNameAndAttributesControlNS(BAR)
-                    .canBeCompared(noAttributes, noNS));
+                    .canBeCompared(noAttributes, null, noNS, null));
         assertFalse(ElementSelectors.byNameAndAttributesControlNS(BAR)
-                   .canBeCompared(control, differentValue));
+                   .canBeCompared(control, null, differentValue, null));
         assertFalse(ElementSelectors.byNameAndAttributesControlNS(BAR)
-                   .canBeCompared(control, differentName));
+                   .canBeCompared(control, null, differentName, null));
         assertFalse(ElementSelectors.byNameAndAttributesControlNS(BAR)
-                   .canBeCompared(control, differentNS));
+                   .canBeCompared(control, null, differentNS, null));
         assertFalse(ElementSelectors.byNameAndAttributesControlNS(BAR)
-                   .canBeCompared(control, noNS));
+                   .canBeCompared(control, null, noNS, null));
     }
 
     @Test
@@ -284,9 +284,9 @@ public class ElementSelectorsTest {
         Element equal = doc.createElement(FOO);
         Element different = doc.createElement(BAR);
         assertFalse(ElementSelectors.not(ElementSelectors.byName)
-                    .canBeCompared(control, equal));
+                    .canBeCompared(control, null, equal, null));
         assertTrue(ElementSelectors.not(ElementSelectors.byName)
-                   .canBeCompared(control, different));
+                   .canBeCompared(control, null, different, null));
     }
 
     @Test
@@ -294,10 +294,10 @@ public class ElementSelectorsTest {
         Element control = doc.createElement(FOO);
         Element test = doc.createElement(BAR);
         assertFalse(ElementSelectors.or(ElementSelectors.byName)
-                    .canBeCompared(control, test));
+                    .canBeCompared(control, null, test, null));
         assertTrue(ElementSelectors.or(ElementSelectors.byName,
                                        ElementSelectors.Default)
-                   .canBeCompared(control, test));
+                   .canBeCompared(control, null, test, null));
     }
 
     @Test
@@ -306,14 +306,14 @@ public class ElementSelectorsTest {
         control.setAttributeNS(SOME_URI, BAR, BAR);
         Element test = doc.createElement(FOO);
         assertTrue(ElementSelectors.and(ElementSelectors.byName)
-                   .canBeCompared(control, test));
+                   .canBeCompared(control, null, test, null));
         assertTrue(ElementSelectors.and(ElementSelectors.byName,
                                         ElementSelectors.Default)
-                   .canBeCompared(control, test));
+                   .canBeCompared(control, null, test, null));
         assertFalse(ElementSelectors.and(ElementSelectors.byName,
                                          ElementSelectors.Default,
                                          ElementSelectors.byNameAndAllAttributes)
-                    .canBeCompared(control, test));
+                    .canBeCompared(control, null, test, null));
     }
 
     @Test
@@ -323,26 +323,26 @@ public class ElementSelectorsTest {
         Element test2 = doc.createElement(FOO);
         assertFalse(ElementSelectors.xor(ElementSelectors.byName,
                                          ElementSelectors.byNameAndAllAttributes)
-                    .canBeCompared(control, test));
+                    .canBeCompared(control, null, test, null));
         assertTrue(ElementSelectors.xor(ElementSelectors.byName,
                                         ElementSelectors.Default)
-                   .canBeCompared(control, test));
+                   .canBeCompared(control, null, test, null));
         assertFalse(ElementSelectors.xor(ElementSelectors.byName,
                                          ElementSelectors.Default)
-                    .canBeCompared(control, test2));
+                    .canBeCompared(control, null, test2, null));
     }
 
     @Test
     public void conditionalReturnsFalseIfConditionIsNotMet() {
         Element control = doc.createElement(FOO);
         Element test = doc.createElement(FOO);
-        assertFalse(ElementSelectors.conditionalSelector(new Predicate<Object>() {
+        assertFalse(ElementSelectors.conditionalSelector(new BiPredicate<Object, XPathContext>() {
                 @Override
-                public boolean test(Object o) {
+                public boolean test(Object o, XPathContext _) {
                     return false;
                 }
             }, ElementSelectors.byName)
-            .canBeCompared(control, test));
+            .canBeCompared(control, null, test, null));
     }
 
     @Test
@@ -350,20 +350,20 @@ public class ElementSelectorsTest {
         Element control = doc.createElement(FOO);
         Element test = doc.createElement(BAR);
         Element test2 = doc.createElement(FOO);
-        assertFalse(ElementSelectors.conditionalSelector(new Predicate<Object>() {
+        assertFalse(ElementSelectors.conditionalSelector(new BiPredicate<Object, XPathContext>() {
                 @Override
-                public boolean test(Object o) {
+                public boolean test(Object o, XPathContext _) {
                     return true;
                 }
             }, ElementSelectors.byName)
-            .canBeCompared(control, test));
-        assertTrue(ElementSelectors.conditionalSelector(new Predicate<Object>() {
+            .canBeCompared(control, null, test, null));
+        assertTrue(ElementSelectors.conditionalSelector(new BiPredicate<Object, XPathContext>() {
                 @Override
-                public boolean test(Object o) {
+                public boolean test(Object o, XPathContext _) {
                     return true;
                 }
             }, ElementSelectors.byName)
-            .canBeCompared(control, test2));
+            .canBeCompared(control, null, test2, null));
     }
 
     @Test
@@ -374,13 +374,13 @@ public class ElementSelectorsTest {
         Element testNS = doc.createElementNS(SOME_URI, FOO);
         assertFalse(ElementSelectors.selectorForElementNamed(BAR,
                                                              ElementSelectors.byName)
-                    .canBeCompared(control, test));
+                    .canBeCompared(control, null, test, null));
         assertTrue(ElementSelectors.selectorForElementNamed(FOO,
                                                             ElementSelectors.byName)
-                   .canBeCompared(control, test));
+                   .canBeCompared(control, null, test, null));
         assertTrue(ElementSelectors.selectorForElementNamed(FOO,
                                                             ElementSelectors.byName)
-                   .canBeCompared(controlNS, testNS));
+                   .canBeCompared(controlNS, null, testNS, null));
     }
 
     @Test
@@ -391,14 +391,14 @@ public class ElementSelectorsTest {
         Element testNS = doc.createElementNS(SOME_URI, FOO);
         assertFalse(ElementSelectors.selectorForElementNamed(new QName(BAR),
                                                              ElementSelectors.byName)
-                    .canBeCompared(control, test));
+                    .canBeCompared(control, null, test, null));
         assertTrue(ElementSelectors.selectorForElementNamed(new QName(FOO),
                                                             ElementSelectors.byName)
-                   .canBeCompared(control, test));
+                   .canBeCompared(control, null, test, null));
         assertTrue(ElementSelectors.selectorForElementNamed(new QName(SOME_URI, FOO,
                                                                       XMLConstants.DEFAULT_NS_PREFIX),
                                                             ElementSelectors.byName)
-                   .canBeCompared(controlNS, testNS));
+                   .canBeCompared(controlNS, null, testNS, null));
     }
 
     @Test
@@ -438,9 +438,9 @@ public class ElementSelectorsTest {
         baz.appendChild(doc.createTextNode(XYZZY2));
 
         assertTrue(ElementSelectors.byXPath(".//BAZ", ElementSelectors.byNameAndText)
-                   .canBeCompared(control, test));
+                   .canBeCompared(control, null, test, null));
         assertFalse(ElementSelectors.byXPath(".//BAZ", ElementSelectors.byNameAndText)
-                    .canBeCompared(control, test2));
+                    .canBeCompared(control, null, test2, null));
     }
 
     @Test
@@ -452,10 +452,10 @@ public class ElementSelectorsTest {
             ElementSelectors.conditionalBuilder()
             .whenElementIsNamed(FOO).thenUse(ElementSelectors.byName);
 
-        assertFalse(builder.build().canBeCompared(control, test));
+        assertFalse(builder.build().canBeCompared(control, null, test, null));
 
         builder.defaultTo(ElementSelectors.Default);
-        assertTrue(builder.build().canBeCompared(control, test));
+        assertTrue(builder.build().canBeCompared(control, null, test, null));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -525,7 +525,7 @@ public class ElementSelectorsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void conditionalSelectorDoesntLikeNullElementSelector() {
-        ElementSelectors.conditionalSelector(new IsNullPredicate(), null);
+        ElementSelectors.conditionalSelector(new IsNullBiPredicate(), null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -564,7 +564,7 @@ public class ElementSelectorsTest {
     public void conditionalSelectorBuilderWontAllowWhensWithoutThens() {
         ElementSelectors.ConditionalSelectorBuilder b =
             ElementSelectors.conditionalBuilder();
-        b.when(new IsNullPredicate());
+        b.when(new IsNullBiPredicate());
         b.build();
     }
 
@@ -572,7 +572,7 @@ public class ElementSelectorsTest {
     public void conditionalSelectorBuilderWontAllowMultipleWhensWithoutInterleavingThens() {
         ElementSelectors.ConditionalSelectorBuilder b =
             ElementSelectors.conditionalBuilder();
-        b.when(new IsNullPredicate());
+        b.when(new IsNullBiPredicate());
         b.whenElementIsNamed(new QName("foo"));
     }
 
@@ -584,4 +584,10 @@ public class ElementSelectorsTest {
         b.defaultTo(ElementSelectors.byName);
     }
 
+    private static class IsNullBiPredicate implements BiPredicate<Object, XPathContext> {
+        @Override
+        public boolean test(Object o, XPathContext _) {
+            return o == null;
+        }
+    }
 }

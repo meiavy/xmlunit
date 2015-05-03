@@ -96,7 +96,7 @@ public class ElementNameAndAttributeQualifier extends ElementNameQualifier {
      * false otherwise
      */
     public boolean qualifyForComparison(Element control, Element test) {
-        return selector.canBeCompared(control, test);
+        return selector.canBeCompared(control, null, test, null);
     }
 
     /**

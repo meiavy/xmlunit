@@ -66,6 +66,8 @@ public class RecursiveElementNameAndTextQualifier implements ElementQualifier {
     public boolean qualifyForComparison(Element currentControl,
                                         Element currentTest) {
         return ElementSelectors.byNameAndTextRec.canBeCompared(currentControl,
-                                                               currentTest);
+                                                               null,
+                                                               currentTest,
+                                                               null);
     }
 }

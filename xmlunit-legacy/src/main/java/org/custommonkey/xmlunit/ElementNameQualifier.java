@@ -57,7 +57,7 @@ public class ElementNameQualifier implements ElementQualifier {
      *  false otherwise
      */
     public boolean qualifyForComparison(Element control, Element test) {
-        return ElementSelectors.byName.canBeCompared(control, test);
+        return ElementSelectors.byName.canBeCompared(control, null, test, null);
     }
 
     /**

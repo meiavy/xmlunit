@@ -59,7 +59,8 @@ public class ElementNameAndTextQualifier extends ElementNameQualifier {
      * elements; false otherwise
      */
     public boolean qualifyForComparison(Element control, Element test) {
-        return ElementSelectors.byNameAndText.canBeCompared(control, test);
+        return ElementSelectors.byNameAndText.canBeCompared(control, null,
+                                                            test, null);
     }
 
     /**

@@ -11,19 +11,11 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
-package org.xmlunit.diff;
-
-import org.w3c.dom.Element;
+package org.xmlunit.util;
 
 /**
- * Strategy used by {@link DefaultNodeMatcher} for selecting matching
- * elements.
+ * Represents a predicate (boolean-valued function) of two arguments.
  */
-public interface ElementSelector {
-    /**
-     * Determine whether the two elements from the control and test
-     * XML can be compared.
-     */
-    boolean canBeCompared(Element controlElement, XPathContext controlXPath,
-                          Element testElement, XPathContext testXPath);
+public interface BiPredicate<T, U> {
+    boolean test(T arg1, U arg2);
 }

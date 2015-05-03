@@ -55,6 +55,7 @@ import org.xmlunit.diff.DifferenceEvaluator;
 import org.xmlunit.diff.ElementSelector;
 import org.xmlunit.diff.ElementSelectors;
 import org.xmlunit.diff.NodeMatcher;
+import org.xmlunit.diff.XPathContext;
 import org.xmlunit.input.CommentLessSource;
 import org.xmlunit.input.WhitespaceNormalizedSource;
 import org.xmlunit.input.WhitespaceStrippedSource;
@@ -407,7 +408,9 @@ public class NewDifferenceEngine
         }
 
         public boolean canBeCompared(Element controlElement,
-                                     Element testElement) {
+                                     XPathContext _controlXPath,
+                                     Element testElement,
+                                     XPathContext _testXPath) {
             return eq.qualifyForComparison(controlElement, testElement);
         }
 
