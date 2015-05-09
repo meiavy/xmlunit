@@ -37,6 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 package org.custommonkey.xmlunit.examples;
 
 import org.xmlunit.diff.ElementSelectors;
+import org.xmlunit.diff.XPathContext;
 import org.w3c.dom.Element;
 import org.custommonkey.xmlunit.ElementQualifier;
 
@@ -66,8 +67,8 @@ public class RecursiveElementNameAndTextQualifier implements ElementQualifier {
     public boolean qualifyForComparison(Element currentControl,
                                         Element currentTest) {
         return ElementSelectors.byNameAndTextRec.canBeCompared(currentControl,
-                                                               null,
+                                                               new XPathContext(currentControl),
                                                                currentTest,
-                                                               null);
+                                                               new XPathContext(currentTest));
     }
 }

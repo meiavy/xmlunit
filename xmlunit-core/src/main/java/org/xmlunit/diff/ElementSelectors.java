@@ -15,6 +15,7 @@ package org.xmlunit.diff;
 
 import static org.xmlunit.util.Linqy.all;
 import static org.xmlunit.util.Linqy.any;
+import static org.xmlunit.util.Linqy.map;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 import org.xmlunit.util.BiPredicate;
 import org.xmlunit.util.IsNullPredicate;
+import org.xmlunit.util.IterableNodeList;
 import org.xmlunit.util.Linqy;
 import org.xmlunit.util.Mapper;
 import org.xmlunit.util.Nodes;
@@ -609,8 +611,9 @@ public final class ElementSelectors {
                                              testXPath)) {
                 return false;
             }
-            NodeList controlChildren = controlElement.getChildNodes();
-            NodeList testChildren = testElement.getChildNodes();
+            NodeList controlChildren = getAndRegisterChildren(controlElement,
+                                                              controlXPath);
+            NodeList testChildren = getAndRegisterChildren(testElement, testXPath);
             final int controlLen = controlChildren.getLength();
             final int testLen = testChildren.getLength();
             int controlIndex, testIndex;
@@ -641,10 +644,20 @@ public final class ElementSelectors {
                     return false;
                 }
                 // recurse for child elements
-                if (c instanceof Element
-                    && !byNameAndTextRec.canBeCompared((Element) c, /* TODO */ null,
-                                                       (Element) t, /* TODO */ null)) {
-                    return false;
+                if (c instanceof Element) {
+                    try {
+                        controlXPath.navigateToChild(controlIndex);
+                        testXPath.navigateToChild(testIndex);
+                        if (!byNameAndTextRec.canBeCompared((Element) c,
+                                                            controlXPath,
+                                                            (Element) t,
+                                                            testXPath)) {
+                            return false;
+                        }
+                    } finally {
+                        controlXPath.navigateToParent();
+                        testXPath.navigateToParent();
+                    }
                 }
                 controlIndex++;
                 testIndex++;
@@ -672,6 +685,12 @@ public final class ElementSelectors {
                 }
             }
             return true;
+        }
+
+        private NodeList getAndRegisterChildren(Element parent, XPathContext ctx) {
+            NodeList nl = parent.getChildNodes();
+            ctx.setChildren(map(new IterableNodeList(nl), TO_NODE_INFO));
+            return nl;
         }
 
         private Map.Entry<Integer, Node> findNonText(NodeList nl, int current, int len) {

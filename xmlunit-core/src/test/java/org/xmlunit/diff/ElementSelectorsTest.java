@@ -43,19 +43,21 @@ public class ElementSelectorsTest {
 
     private void pureElementNameComparisons(ElementSelector s) {
         Element control = doc.createElement(FOO);
+        XPathContext ctX = new XPathContext(control);
         Element equal = doc.createElement(FOO);
         Element different = doc.createElement(BAR);
         Element controlNS = doc.createElementNS(SOME_URI, FOO);
+        Element controlNS2 = doc.createElementNS(SOME_URI, FOO);
         controlNS.setPrefix(BAR);
 
         assertFalse(s.canBeCompared(null, null, null, null));
-        assertFalse(s.canBeCompared(null, null, control, null));
-        assertFalse(s.canBeCompared(control, null, null, null));
-        assertTrue(s.canBeCompared(control, null, equal, null));
-        assertFalse(s.canBeCompared(control, null, different, null));
-        assertFalse(s.canBeCompared(control, null, controlNS, null));
-        assertTrue(s.canBeCompared(doc.createElementNS(SOME_URI, FOO),
-                                   null, controlNS, null));
+        assertFalse(s.canBeCompared(null, null, control, ctX));
+        assertFalse(s.canBeCompared(control, ctX, null, null));
+        assertTrue(s.canBeCompared(control, ctX, equal, new XPathContext(equal)));
+        assertFalse(s.canBeCompared(control, ctX, different, new XPathContext(different)));
+        assertFalse(s.canBeCompared(control, ctX, controlNS, new XPathContext(controlNS)));
+        assertTrue(s.canBeCompared(controlNS2, new XPathContext(controlNS2),
+                                   controlNS, new XPathContext(controlNS)));
     }
 
     @Test public void byName() {
@@ -68,6 +70,7 @@ public class ElementSelectorsTest {
 
     private void byNameAndText_SingleLevel(ElementSelector s) {
         Element control = doc.createElement(FOO);
+        XPathContext ctX = new XPathContext(control);
         control.appendChild(doc.createTextNode(BAR));
         Element equal = doc.createElement(FOO);
         equal.appendChild(doc.createTextNode(BAR));
@@ -78,10 +81,10 @@ public class ElementSelectorsTest {
         differentText.appendChild(doc.createTextNode(BAR));
         differentText.appendChild(doc.createTextNode(BAR));
 
-        assertTrue(s.canBeCompared(control, null, equal, null));
-        assertTrue(s.canBeCompared(control, null, equalC, null));
-        assertFalse(s.canBeCompared(control, null, noText, null));
-        assertFalse(s.canBeCompared(control, null, differentText, null));
+        assertTrue(s.canBeCompared(control, ctX, equal, new XPathContext(equal)));
+        assertTrue(s.canBeCompared(control, ctX, equalC, new XPathContext(equalC)));
+        assertFalse(s.canBeCompared(control, ctX, noText, new XPathContext(noText)));
+        assertFalse(s.canBeCompared(control, ctX, differentText, new XPathContext(differentText)));
     }
 
     @Test public void byNameAndText() {
@@ -98,6 +101,7 @@ public class ElementSelectorsTest {
 
     @Test public void byNameAndTextRec() {
         Element control = doc.createElement(FOO);
+        XPathContext ctX = new XPathContext(control);
         Element child = doc.createElement(BAR);
         control.appendChild(child);
         child.appendChild(doc.createTextNode(BAR));
@@ -122,12 +126,12 @@ public class ElementSelectorsTest {
         child5.appendChild(doc.createTextNode(FOO));
 
         ElementSelector s = ElementSelectors.byNameAndTextRec;
-        assertTrue(s.canBeCompared(control, null, equal, null));
-        assertTrue(s.canBeCompared(control, null, equalC, null));
-        assertFalse(s.canBeCompared(control, null, noText, null));
-        assertFalse(s.canBeCompared(control, null, differentLevel, null));
-        assertFalse(s.canBeCompared(control, null, differentElement, null));
-        assertFalse(s.canBeCompared(control, null, differentText, null));
+        assertTrue(s.canBeCompared(control, ctX, equal, new XPathContext(equal)));
+        assertTrue(s.canBeCompared(control, ctX, equalC, new XPathContext(equalC)));
+        assertFalse(s.canBeCompared(control, ctX, noText, new XPathContext(noText)));
+        assertFalse(s.canBeCompared(control, ctX, differentLevel, new XPathContext(differentLevel)));
+        assertFalse(s.canBeCompared(control, ctX, differentElement, new XPathContext(differentElement)));
+        assertFalse(s.canBeCompared(control, ctX, differentText, new XPathContext(differentText)));
     }
 
     @Test public void byNameAndAllAttributes_NamePart() {
