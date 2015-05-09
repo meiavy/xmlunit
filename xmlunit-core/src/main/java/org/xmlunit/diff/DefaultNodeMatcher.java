@@ -98,7 +98,7 @@ public class DefaultNodeMatcher implements NodeMatcher {
         Match m = searchIn(searchFor, searchedForContext, searchIn,
                            searchInXPathContextProvider, availableIndexes,
                            indexOfLastMatch + 1, searchSize);
-        return m != null ? m : searchIn(searchFor,searchedForContext,  searchIn,
+        return m != null ? m : searchIn(searchFor, searchedForContext, searchIn,
                                         searchInXPathContextProvider, availableIndexes,
                                         0, indexOfLastMatch);
     }
