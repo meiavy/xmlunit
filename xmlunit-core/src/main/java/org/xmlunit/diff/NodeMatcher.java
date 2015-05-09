@@ -15,6 +15,7 @@ package org.xmlunit.diff;
 
 import java.util.Map;
 import org.w3c.dom.Node;
+import org.xmlunit.util.Mapper;
 
 /**
  * Strategy that matches control and tests nodes for comparison.
@@ -28,7 +29,20 @@ public interface NodeMatcher {
      * <p>Nodes passed in as attributes but not returned as member of
      * any pair will cause {@link ComparisonType#CHILD_LOOKUP}
      * differences}.</p>
+     *
+     * <p>The XPathContexts provided by the given providers may get
+     * modified during the execution of the method and won't get
+     * reset.</p>
+     *
+     * @param controlNodes the control nodes
+     * @param controlXPathContextProvider provides the XPathContext
+     * for a given control node
+     * @param testNodes the test nodes
+     * @param testXPathContextProvider provides the XPathContext for a
+     * given test node
      */
     Iterable<Map.Entry<Node, Node>> match(Iterable<Node> controlNodes,
-                                          Iterable<Node> testNodes);
+                                          Mapper<Node, XPathContext> controlXPathContextProvider,
+                                          Iterable<Node> testNodes,
+                                          Mapper<Node, XPathContext> testXPathContextProvider);
 }

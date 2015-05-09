@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.xmlunit.util.Linqy;
+import org.xmlunit.util.Mapper;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -58,7 +59,9 @@ public class DefaultNodeMatcher implements NodeMatcher {
 
     @Override
     public Iterable<Map.Entry<Node, Node>> match(Iterable<Node> controlNodes,
-                                                 Iterable<Node> testNodes) {
+                                                 Mapper<Node, XPathContext> controlXPathContextProvider,
+                                                 Iterable<Node> testNodes,
+                                                 Mapper<Node, XPathContext> testXPathContextProvider) {
         Map<Node, Node> matches = new LinkedHashMap<Node, Node>();
         List<Node> controlList = Linqy.asList(controlNodes);
         List<Node> testList = Linqy.asList(testNodes);
@@ -71,7 +74,10 @@ public class DefaultNodeMatcher implements NodeMatcher {
         Match lastMatch = new Match(null, -1);
         for (int i = 0; i < controlSize; i++) {
             Node control = controlList.get(i);
-            Match testMatch = findMatchingNode(control, testList,
+            Match testMatch = findMatchingNode(control,
+                                               controlXPathContextProvider.apply(control),
+                                               testList,
+                                               testXPathContextProvider,
                                                lastMatch.index,
                                                unmatchedTestIndexes);
             if (testMatch != null) {
@@ -83,39 +89,44 @@ public class DefaultNodeMatcher implements NodeMatcher {
     }
 
     private Match findMatchingNode(final Node searchFor,
+                                   final XPathContext searchedForContext,
                                    final List<Node> searchIn,
+                                   final Mapper<Node, XPathContext> searchInXPathContextProvider,
                                    final int indexOfLastMatch,
                                    final Set<Integer> availableIndexes) {
         final int searchSize = searchIn.size();
-        Match m = searchIn(searchFor, searchIn,
-                           availableIndexes,
+        Match m = searchIn(searchFor, searchedForContext, searchIn,
+                           searchInXPathContextProvider, availableIndexes,
                            indexOfLastMatch + 1, searchSize);
-        return m != null ? m : searchIn(searchFor, searchIn,
-                                        availableIndexes,
+        return m != null ? m : searchIn(searchFor,searchedForContext,  searchIn,
+                                        searchInXPathContextProvider, availableIndexes,
                                         0, indexOfLastMatch);
     }
 
     private Match searchIn(final Node searchFor,
+                           final XPathContext searchedForContext,
                            final List<Node> searchIn,
+                           final Mapper<Node, XPathContext> searchInXPathContextProvider,
                            final Set<Integer> availableIndexes,
                            final int fromInclusive, final int toExclusive) {
         for (int i = fromInclusive; i < toExclusive; i++) {
             if (!availableIndexes.contains(Integer.valueOf(i))) {
                 continue;
             }
-            if (nodesMatch(searchFor, searchIn.get(i))) {
-                return new Match(searchIn.get(i), i);
+            Node n = searchIn.get(i);
+            if (nodesMatch(searchFor, searchedForContext, n,
+                           searchInXPathContextProvider.apply(n))) {
+                return new Match(n, i);
             }
         }
         return null;
     }
 
-    private boolean nodesMatch(final Node n1, final Node n2) {
+    private boolean nodesMatch(final Node n1, final XPathContext n1Context,
+                               final Node n2, final XPathContext n2Context) {
         if (n1 instanceof Element && n2 instanceof Element) {
-            return elementSelector.canBeCompared((Element) n1,
-                                                 /* TODO */ new XPathContext(n1),
-                                                 (Element) n2,
-                                                 /* TODO */ new XPathContext(n2));
+            return elementSelector.canBeCompared((Element) n1, n1Context,
+                                                 (Element) n2, n2Context);
         }
         return nodeTypeMatcher.canBeCompared(n1.getNodeType(),
                                              n2.getNodeType());

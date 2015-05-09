@@ -60,6 +60,7 @@ import org.xmlunit.input.CommentLessSource;
 import org.xmlunit.input.WhitespaceNormalizedSource;
 import org.xmlunit.input.WhitespaceStrippedSource;
 import org.xmlunit.util.Linqy;
+import org.xmlunit.util.Mapper;
 import org.xmlunit.util.Predicate;
 import org.custommonkey.xmlunit.examples.RecursiveElementNameAndTextQualifier;
 
@@ -506,12 +507,13 @@ public class NewDifferenceEngine
             nestedMatcher = nested;
         }
 
+        @Override
         public Iterable<Map.Entry<Node, Node>>
-            match(Iterable<Node> controlNodes,
-                  Iterable<Node> testNodes) {
+            match(Iterable<Node> controlNodes, Mapper<Node, XPathContext> controlMapper,
+                  Iterable<Node> testNodes, Mapper<Node, XPathContext> testMapper) {
             final Map<Node, Node> map = new HashMap<Node, Node>();
             for (Map.Entry<Node, Node> e 
-                     : nestedMatcher.match(controlNodes, testNodes)) {
+                     : nestedMatcher.match(controlNodes, controlMapper, testNodes, testMapper)) {
                 map.put(e.getKey(), e.getValue());
             }
 

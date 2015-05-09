@@ -412,6 +412,7 @@ public class ElementSelectorsTest {
         String XYZZY2 = "xyzzy2";
 
         Element control = doc.createElement(FOO);
+        XPathContext ctX = new XPathContext(control);
         Element bar = doc.createElement(BAR);
         control.appendChild(bar);
         Element baz = doc.createElement(BAZ);
@@ -442,9 +443,9 @@ public class ElementSelectorsTest {
         baz.appendChild(doc.createTextNode(XYZZY2));
 
         assertTrue(ElementSelectors.byXPath(".//BAZ", ElementSelectors.byNameAndText)
-                   .canBeCompared(control, null, test, null));
+                   .canBeCompared(control, ctX, test, new XPathContext(test)));
         assertFalse(ElementSelectors.byXPath(".//BAZ", ElementSelectors.byNameAndText)
-                    .canBeCompared(control, null, test2, null));
+                    .canBeCompared(control, ctX, test2, new XPathContext(test2)));
     }
 
     @Test

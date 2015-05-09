@@ -417,16 +417,23 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         XPathContext _controlXPath,
+                                         XPathContext controlXPath,
                                          Element testElement,
-                                         XPathContext _testXPath) {
+                                         XPathContext testXPath) {
                 Iterable<Node> controlChildren =
                     engine.selectNodes(xpath, new DOMSource(controlElement));
+                // TODO
+                controlXPath.setChildren(map(controlChildren, TO_NODE_INFO));
                 int expected = Linqy.count(controlChildren);
+                Iterable<Node> testChildren =
+                    engine.selectNodes(xpath, new DOMSource(testElement));
+                // TODO
+                testXPath.setChildren(map(testChildren, TO_NODE_INFO));
                 int matched =
                     Linqy.count(nm.match(controlChildren,
-                                         engine.selectNodes(xpath,
-                                                            new DOMSource(testElement))));
+                                         /* TODO */ new ChildNodeXPathContextProvider(controlXPath, controlChildren),
+                                         testChildren,
+                                         /* TODO */ new ChildNodeXPathContextProvider(testXPath, testChildren)));
                 return expected == matched;
             }
         };

@@ -509,7 +509,12 @@ public final class DOMDifferenceEngine extends AbstractDifferenceEngine {
         ComparisonState chain = new OngoingComparisonState();
 
         Iterable<Map.Entry<Node, Node>> matches =
-            getNodeMatcher().match(controlSeq, testSeq);
+            getNodeMatcher().match(controlSeq,
+                                   new ChildNodeXPathContextProvider(controlContext,
+                                                                     controlSeq),
+                                   testSeq,
+                                   new ChildNodeXPathContextProvider(testContext,
+                                                                     testSeq));
         List<Node> controlList = Linqy.asList(controlSeq);
         List<Node> testList = Linqy.asList(testSeq);
         Set<Node> seen = new HashSet<Node>();
