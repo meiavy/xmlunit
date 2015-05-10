@@ -407,7 +407,7 @@ public final class ElementSelectors {
      * @param childSelector ElementSelector to apply to the selected children.
      */
     public static ElementSelector byXPath(final String xpath,
-                                          Map<String, String> namespaceContext,
+                                          final Map<String, String> namespaceContext,
                                           ElementSelector childSelector) {
         final XPathEngine engine = new JAXPXPathEngine();
         if (namespaceContext != null) {
@@ -417,23 +417,18 @@ public final class ElementSelectors {
         return new ElementSelector() {
             @Override
             public boolean canBeCompared(Element controlElement,
-                                         XPathContext controlXPath,
+                                         XPathContext _controlXPath,
                                          Element testElement,
-                                         XPathContext testXPath) {
+                                         XPathContext _testXPath) {
+                RecursiveXPathBuilder builder = new RecursiveXPathBuilder();
+                builder.setNamespaceContext(namespaceContext);
                 Iterable<Node> controlChildren =
                     engine.selectNodes(xpath, new DOMSource(controlElement));
-                // TODO
-                controlXPath.setChildren(map(controlChildren, TO_NODE_INFO));
                 int expected = Linqy.count(controlChildren);
                 Iterable<Node> testChildren =
                     engine.selectNodes(xpath, new DOMSource(testElement));
-                // TODO
-                testXPath.setChildren(map(testChildren, TO_NODE_INFO));
                 int matched =
-                    Linqy.count(nm.match(controlChildren,
-                                         /* TODO */ new ChildNodeXPathContextProvider(controlXPath, controlChildren),
-                                         testChildren,
-                                         /* TODO */ new ChildNodeXPathContextProvider(testXPath, testChildren)));
+                    Linqy.count(nm.match(controlChildren, builder, testChildren, builder));
                 return expected == matched;
             }
         };
